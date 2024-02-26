@@ -1,0 +1,89 @@
+﻿@page
+@model APILP3.Areas.Identity.Pages.Account.Manage.HomePageModel
+
+@{
+    ViewData["Title"] = "Feira & Office";
+    Layout = "/Views/Shared/LayoutProdutos.cshtml";
+    
+}
+
+<link rel="stylesheet" type="text/css" href="~/css/homePage.css" />
+
+<h3>Produtos</h3>
+
+
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>ID do produto</th>
+            <th>Descrição</th>
+            <th>Preço</th>
+            <th>Unidade</th>
+            <th>Stock</th>
+            <th>Seleção</th>
+            <th>Quantidade</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var product in Model.Products)
+        {
+            <tr>
+                <td>@product.Code</td>
+                <td name="descricao[@product.Code]">@product.Description</td>
+                <td name="pvp[@product.Code]">@product.PVP</td>
+                <td name="unidade[@product.Code]">@product.Unit</td>
+                <td name="stock[@product.Code]">@product.Stock</td>
+                <td>
+                    <input type="checkbox" name="selectedProducts" value="@product.Code">
+                    
+                </td>
+                <td>
+                    <input type="number" name="productQuantities[@product.Code]" value="0" min="0">
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+    
+<button class="finalizar "id="btn-finalizar" type="button" onclick="finalizarCompra()">Finalizar compra</button>
+
+<script>
+    function finalizarCompra() {
+        // Obter produtos selecionados e quantidades
+        var selectedProducts = document.querySelectorAll('input[name="selectedProducts"]:checked');
+        var productsData = [];
+        
+        selectedProducts.forEach(function (product) {
+            var code = product.value;
+            var quantity = document.querySelector('input[name="productQuantities[' + code + ']"]').value;
+       
+            // Obter outras informações do produto diretamente do HTML
+            var description = document.querySelector('td[name="descricao[' + code + ']"]').innerText;
+            
+            var unit = document.querySelector('td[name="unidade[' + code + ']"]').innerText;
+
+            // Corrigir: converter pvp para um número
+            var pvp = parseFloat(document.querySelector('td[name="pvp[' + code + ']"]').innerText.replace(',', '.'));
+
+
+            // Adicionar o produto à lista
+           productsData.push({
+                 id: code,
+                 description: description,
+                 quantity: quantity,
+                 unit: unit,
+                 pvp:pvp
+            });
+        });
+
+        localStorage.setItem('selectedProducts', JSON.stringify(productsData));
+       
+        
+        window.location.href = '/Identity/Account/Manage/FinalizarCompra';
+ 
+    }
+</script>
+
+

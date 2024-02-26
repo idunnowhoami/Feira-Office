@@ -1,0 +1,86 @@
+﻿@page
+@model APILP3.Areas.Identity.Pages.Account.Manage.VerEncomendasModel
+@{
+
+    ViewData["Title"] = "Feira & Office";
+    Layout = "/Views/Shared/LayoutProdutos.cshtml";
+}
+
+<link rel="stylesheet" type="text/css" href="~/css/VerEncomendas.css" />
+
+<!-- Tabela de Dados Iniciais da Encomenda -->
+<h3>Ver encomendas</h3>
+<table id="table-dados-iniciais" border="1">
+    <thead>
+        <tr id="tabela-dados-clientes">
+            <th>Nome do cliente</th>
+            <th>E-mail do cliente</th>
+            <th>ID da encomenda</th>
+            <th>Data</th>
+            <th>Valor total</th>
+
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var encomenda in Model.UserOrders)
+        {
+            <tr>
+                <td>@encomenda.Client.First().Name</td>
+                <td>@encomenda.Client.First().Email</td>
+                <td><strong>@encomenda.OrderNumber</strong></td>
+                <td>@encomenda.Date</td>
+                <td>@encomenda.TotalAmount€</td>
+            </tr>
+            <tr class="linha-separadora">
+                <td colspan="3"></td>
+            </tr>
+            <tr><td colspan="4">&nbsp;</td></tr> <!-- Adiciona uma linha em branco entre cada registro -->
+        }
+    </tbody>
+</table>
+
+<!-- Tabela de Produtos da Encomenda -->
+<table id="tabela-produtos" border="1">
+    <thead>
+        <tr>
+            <th>ID da encomenda</th>
+            <th>Produtos</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var encomenda in Model.UserOrders)
+        {
+            <tr>
+                <td><strong>@encomenda.OrderNumber</strong></td>
+                
+                <td>
+                    <table id ="dados-dos-produtos">
+                        <thead>
+                            <tr>
+                                <th>Código dos produtos</th>
+                                <th>Quantidade</th>
+                                <th>Unidade</th>
+                                <th>Preço s/ IVA</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var produto in encomenda.OrderLines)
+                            {
+                                <tr>
+                                    <td>@produto.ProductCode</td>
+                                    <td>@produto.Quantity</td>
+                                    <td>@produto.Unit</td>
+                                    <td>@produto.Price€</td>
+                                </tr>
+                                <tr class="linha-separadora">
+                                    <td colspan="3"></td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </td>
+            </tr>
+            <tr><td colspan="2">&nbsp;</td></tr> <!-- Adiciona uma linha em branco entre cada registro -->
+        }
+    </tbody>
+</table>

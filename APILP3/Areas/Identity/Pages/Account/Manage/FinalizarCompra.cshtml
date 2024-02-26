@@ -1,0 +1,192 @@
+﻿@page
+@model APILP3.Areas.Identity.Pages.Account.Manage.FinalizarCompraModel
+@{
+    ViewData["Title"] = "Feira & Office";
+    Layout = "/Views/Shared/LayoutProdutos.cshtml";
+}
+
+
+<link rel="stylesheet" type="text/css" href="~/css/finalizarCompra.css" />
+
+<h3>Produtos selecionados</h3>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>ID do produto</th>
+            <th>Descrição</th>
+            <th>Preço</th>
+            <th>Unidade</th>
+            <th>Quantidade</th>
+        </tr>
+    </thead>
+    <tbody>
+
+        <tr id="produtosSelecionados">
+                
+            </tr>
+        
+    </tbody>
+</table>
+
+<div class="total-label">
+    <label for="total">Total dos produtos:</label>
+    <span id="totalAmount"></span>
+</div>
+
+<div class="total-label">
+    <label for="totalTax">Total das taxas:</label>
+    <span id="totalTaxAmount"></span>
+</div>
+
+<div class="total-label">
+    <label for="total">Total da compra:</label>
+    <span id="total"></span>
+</div>
+
+
+<div class ="container-wrapper">
+    <div class="address-container">
+        <!-- Morada de Faturação -->
+        <h3>Morada de faturação</h3>
+        @foreach (var user in Model.dadosUtil)
+        {
+            <label for="billingAddress1">Nome:</label>
+            <input type="text" id="name" name="nome" value="@user.Name" disabled>
+
+            <label for="billingAddress1">E-mail:</label>
+            <input type="text" id="email" name="email" value="@user.Email" disabled>
+
+            <label for="billingAddress1">Endereço 1:</label>
+            <input type="text" id="billingAddress1" name="billingAddress1" value="@user.Address1" disabled>
+
+            <label for="billingAddress2">Endereço 2:</label>
+            <input type="text" id="billingAddress2" name="billingAddress2" value="@user.Address2" disabled>
+
+            <label for="billingPostalCode">Código Postal:</label>
+            <input type="text" id="billingPostalCode" name="billingPostalCode" value="@user.PostalCode" disabled>
+
+            <label for="billingCity">Cidade:</label>
+            <input type="text" id="billingCity" name="billingCity" value="@user.City" disabled>
+
+            <label for="billingCountry">País:</label>
+            <input type="text" id="billingCountry" name="billingCountry" value="@user.Country" disabled>
+        }
+    </div>
+
+    <div class="copy-button-container">
+        <!-- Botão de Cópia -->
+        <button id="copyAddressButton" onclick="copyBillingToShipping()">Copiar morada</button>
+    </div>
+
+    <div class="address-forms-container">
+        <h3>Morada de envio</h3>
+        <!-- Formulário de Morada de Envio -->
+        <form id="shippingAddressForm" method="post">
+
+            <label for="shippingAddress1">Endereço 1:</label>
+            <input type="text" id="shippingAddress1" name="shippingAddress1" required>
+
+            <label for="shippingAddress2">Endereço 2:</label>
+            <input type="text" id="shippingAddress2" name="shippingAddress2">
+
+            <label for="shippingPostalCode">Código Postal:</label>
+            <input type="text" id="shippingPostalCode" name="shippingPostalCode" required>
+
+            <label for="shippingCity">Cidade:</label>
+            <input type="text" id="shippingCity" name="shippingCity" required>
+
+            <label for="shippingCountry">País:</label>
+            <input type="text" id="shippingCountry" name="shippingCountry" required>
+
+            <input type="hidden" id="productsDataAuxInput" name="productsDataAux" />
+
+            <button id="order-submit" type="submit" class="w-100 btn btn-lg btn-primary"
+            @if (!Model.dadosUtil.Any(user => user.Active))
+            {
+                <text>disabled</text>
+            }>
+            Finalizar compra
+            </button>
+
+            @if (!string.IsNullOrEmpty(Model.Message))
+            {
+                <div class="alert alert-info custom-alert"> @Model.Message </div>
+            }
+
+        </form>
+
+
+    </div>
+
+</div>
+<script>
+
+    function copyBillingToShipping() {
+        // Copiar os dados da morada de faturação para a morada de envio
+        document.getElementById("shippingAddress1").value = document.getElementById("billingAddress1").value;
+        document.getElementById("shippingAddress2").value = document.getElementById("billingAddress2").value;
+        document.getElementById("shippingPostalCode").value = document.getElementById("billingPostalCode").value;
+        document.getElementById("shippingCity").value = document.getElementById("billingCity").value;
+        document.getElementById("shippingCountry").value = document.getElementById("billingCountry").value;
+    }
+</script>
+
+
+<script>
+    // Recuperar os dados do localStorage
+    var productsData = localStorage.getItem('selectedProducts');
+    console.log(productsData)
+    productsDataAux = JSON.parse(productsData)
+    
+    // Verificar se há dados no localStorage
+    if (productsDataAux) {
+
+        // Atualizar a tabela com os produtos selecionados
+        var tableBody = document.querySelector('#produtosSelecionados tbody');
+    
+        var totalAmount = 0; // Inicializar o total
+        var taxRate = 0.23; // Inicializar o total das taxas
+        var totalDaCompra = 0; //Inicializar o total da compra
+
+        for (var product of productsDataAux) {
+            var id = product.id;
+            var descricao = product.description;
+            var preco = product.pvp;
+            var unidade = product.unit;
+            var quantidade = product.quantity;
+
+
+            // Adicionar a linha à tabela
+            var newRow = document.createElement('tr');
+            newRow.innerHTML = `
+                            <td>${id}</td>
+                            <td>${descricao}</td>
+                            <td>${preco}</td>
+                            <td>${unidade}</td>
+                            <td>${quantidade}</td>
+                        `;
+            document.querySelector('table tbody').appendChild(newRow);
+
+            totalAmount += preco * quantidade;
+            var totalTax = totalAmount * taxRate;
+            totalDaCompra = totalTax + totalAmount;
+
+            document.getElementById('productsDataAuxInput').value = JSON.stringify(productsDataAux);
+            console.log(productsDataAux);
+
+        }
+        var totalElement = document.getElementById('totalAmount');
+        var totalTaxElement = document.getElementById('totalTaxAmount');
+        var total = document.getElementById('total');
+
+        totalElement.textContent = '€' + totalAmount.toFixed(2); // Adicionar o símbolo de euro
+        totalTaxElement.textContent = '€' + totalTax.toFixed(2); // Adicionar o símbolo de euro
+        total.textContent = '€' + totalDaCompra.toFixed(2); // Adicionar o símbolo de euro
+
+
+        totalElement.style.fontWeight = "bold"; // Estilizar o total
+    }
+
+</script>
+
